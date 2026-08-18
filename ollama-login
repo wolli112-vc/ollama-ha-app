@@ -1,0 +1,107 @@
+#!/usr/bin/env bash
+# =============================================================================
+# Ollama Cloud Login CLI für Home Assistant Add-on
+# Version: 1.0.0
+# =============================================================================
+
+set -e
+
+ADDON_NAME="ollama"
+CONTAINER_NAME="addon_local_${ADDON_NAME}"
+
+show_help() {
+    cat << EOF
+Ollama Cloud Login Helper
+Version: 1.0.0
+
+Usage:
+  ollama-login               Interaktiver Login bei ollama.com
+  ollama-login status        Zeigt Login-Status an
+  ollama-login logout        Logout von ollama.com
+
+Dieses Script führt den Login innerhalb des laufenden Ollama Containers durch.
+Die Anmeldedaten werden im persistenten Addon-Storage gesichert.
+EOF
+}
+
+login() {
+    echo "🔐 Ollama Cloud Login"
+    echo "====================="
+    echo ""
+    echo "1. Besuche https://ollama.com/settings/keys"
+    echo "2. Erstelle einen neuen API Key oder nutze einen bestehenden"
+    echo ""
+    read -rp "Gib deinen Ollama API Key ein: " API_KEY
+    echo ""
+
+    if [ -z "$API_KEY" ]; then
+        echo "❌ Kein API Key eingegeben. Abbruch."
+        exit 1
+    fi
+
+    echo "🔄 Login wird durchgeführt..."
+    docker exec -i "$CONTAINER_NAME" bash -c "echo '$API_KEY' | ollama login --token-stdin" || {
+        echo "❌ Login fehlgeschlagen. Ist das Add-on gestartet?"
+        exit 1
+    }
+
+    echo ""
+    echo "✅ Login erfolgreich!"
+    echo "📁 Credentials werden in /config/models/.ollama gespeichert"
+}
+
+status() {
+    echo "📊 Ollama Login Status"
+    echo "======================"
+    echo ""
+
+    if ! docker ps --format '{{.Names}}' | grep -q "$CONTAINER_NAME"; then
+        echo "⚠️  Ollama Add-on Container läuft nicht!"
+        echo "   Starte das Add-on zuerst über die Home Assistant Oberfläche."
+        exit 1
+    fi
+
+    docker exec "$CONTAINER_NAME" ollama list 2>/dev/null || {
+        echo "ℹ️  Noch nicht bei ollama.com eingeloggt oder keine Modelle gepullt."
+        echo "   Führe 'ollama-login' aus um dich anzumelden."
+    }
+}
+
+logout_user() {
+    echo "🚪 Ollama Logout"
+    echo "================"
+    echo ""
+
+    if docker ps --format '{{.Names}}' | grep -q "$CONTAINER_NAME"; then
+        docker exec "$CONTAINER_NAME" ollama logout 2>/dev/null || true
+        echo "✅ Logout durchgeführt."
+    else
+        echo "⚠️  Container nicht laufend. Credentials werden aus dem Storage gelöscht."
+    fi
+
+    # Lösche gespeicherte Credentials im HA Storage
+    if [ -d "/config/models/.ollama" ]; then
+        rm -rf /config/models/.ollama
+        echo "🗑️  Lokale Credentials gelöscht."
+    fi
+}
+
+case "${1:-}" in
+    --help|-h|help)
+        show_help
+        ;;
+    status)
+        status
+        ;;
+    logout)
+        logout_user
+        ;;
+    "")
+        login
+        ;;
+    *)
+        echo "Unbekannter Befehl: $1"
+        show_help
+        exit 1
+        ;;
+esac

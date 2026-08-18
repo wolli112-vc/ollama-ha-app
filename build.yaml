@@ -1,0 +1,7 @@
+build_from:
+  aarch64: ollama/ollama:latest
+  amd64: ollama/ollama:latest
+  armv7: ollama/ollama:latest
+codenotary:
+  signer: notary@home-assistant.io
+  base_image: notary@home-assistant.io
