@@ -80,7 +80,7 @@ ollama-login logout
 
 ## Version
 
-Aktuelle Version: **1.0.0**
+Aktuelle Version: **1.0.1**
 
 ## Lizenz
 

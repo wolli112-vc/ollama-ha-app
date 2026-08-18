@@ -1,6 +1,15 @@
-FROM ollama/ollama:latest
+ARG BUILD_FROM=ollama/ollama:latest
+FROM ${BUILD_FROM}
 
-# Installiere zusätzliche Tools für CLI-Zugriff
+# Home Assistant Labels
+LABEL \
+    io.hass.type="addon" \
+    io.hass.name="Ollama" \
+    io.hass.description="Ollama LLM Server as Home Assistant Add-on" \
+    io.hass.version="1.0.1" \
+    maintainer="wolli112-vc"
+
+# Install additional tools for CLI access
 RUN apt-get update && apt-get install -y \
     bash \
     curl \
@@ -14,8 +23,8 @@ RUN chmod a+x /run.sh
 # Expose Ollama Port
 EXPOSE 11434
 
-# Volume für Models
+# Volume for Models
 VOLUME ["/root/.ollama"]
 
-# Starte über unser Script
+# Start via our script
 CMD [ "/run.sh" ]

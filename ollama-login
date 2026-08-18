@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 # Ollama Cloud Login CLI für Home Assistant Add-on
-# Version: 1.0.0
+# Version: 1.0.1
 # =============================================================================
 
 set -e
@@ -12,7 +12,7 @@ CONTAINER_NAME="addon_local_${ADDON_NAME}"
 show_help() {
     cat << EOF
 Ollama Cloud Login Helper
-Version: 1.0.0
+Version: 1.0.1
 
 Usage:
   ollama-login               Interaktiver Login bei ollama.com

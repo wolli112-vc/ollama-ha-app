@@ -1,5 +1,5 @@
 name: "Ollama"
-version: "1.0.0"
+version: "1.0.1"
 slug: "ollama"
 description: "Ollama LLM Server as Home Assistant Add-on"
 url: "https://github.com/wolli112-vc/ollama-ha-app"
